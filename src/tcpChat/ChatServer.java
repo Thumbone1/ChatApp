@@ -1,39 +1,80 @@
 package tcpChat;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.*;
-
 
 
 public class ChatServer {
 	
-	ServerSocket server;
-	Socket socket;
+	private final int PORT = 3835;
 	
-	public ChatServer(int port) {
+	private ServerSocket server;
+	private Socket socket;
+	private InetAddress ip;
+	private String message;
+	
+	public ChatServer(InetAddress serverIP) throws IOException {
 		try {
-			server = new ServerSocket(port);
-			socket = server.accept();
+			this.server = new ServerSocket(PORT);
+			this.socket = server.accept();
+			this.ip = serverIP;
 			
 			
 		} catch(Exception e) {
 			System.out.println("Could not establish a server due to exception: " + e);
 		}
-		
-		
+
 	}
 	
-	public void stopChatServer() {
+	public void stop() {
 		try {
 			socket.close();
 			server.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.out.println("Could not stop server due to exception: " + e);
+			
+			System.out.println("Could not stop server due to error: " + e);
 		}
-		
+
+	}
+	
+	public void sendMessage(String s) {
+		message = s;
+		try {
+			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+			out.print(message);
+		} catch (IOException e) {
+			
+			e.printStackTrace();
+		}
 		
 	}
 	
+	public String getOutgoingMessage() throws IOException {
+		
+		try {
+			return this.socket.getOutputStream().toString();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return "error";
+	}
+	
+	public String getIncomingMessage() throws IOException {
+		try {
+			return this.socket.getInputStream().toString();
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+		return "error";
+		
+	}
+	
+	public int getPort() {
+		return this.PORT;
+	}
+	
+	public InetAddress getIp() {
+		return this.ip;
+	}
 
 }

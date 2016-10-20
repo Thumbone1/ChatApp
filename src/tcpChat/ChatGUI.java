@@ -5,9 +5,12 @@ import java.awt.*;
 import javax.swing.*;
 
 import java.awt.event.*;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 
 
-public class ChatGUI implements Runnable {
+public class ChatGUI {
 
 	private JFrame frame;
 	private JTextField serverIPText;
@@ -19,6 +22,10 @@ public class ChatGUI implements Runnable {
 	private int DISCONNECTED = 0;
 	private int CONNECTED = 1;
 	private int connectionStatus = DISCONNECTED;
+	
+	private ChatServer server;
+	private ChatClient client;
+	private String name;
 	
 	
 	/**
@@ -122,10 +129,6 @@ public class ChatGUI implements Runnable {
 		
 		frame.getContentPane().add(scroll);
 		
-	
-		//scroll.add(incomingTextArea);
-	
-		
 		
 		JTextArea outgoingTextArea = new JTextArea();
 		outgoingTextArea.setLineWrap(true);
@@ -140,16 +143,29 @@ public class ChatGUI implements Runnable {
 		
 		
 		/*
-		 * Add action listeners to connect and disconnect buttons
+		 * Add action listeners to connect and disconnect buttons and 
+		 * RUN PROGRAM BELOW
 		 */
+		
 		
 		btnConnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				btnConnect.setEnabled(false);
 				btnDisconnect.setEnabled(true);
-				
+				serverIPText.setEnabled(false);
+				userNameText.setEnabled(false);
 				incomingTextArea.append("Connecting...\n");
+				name = userNameText.getText();
 				
+				if (rdbtnHost.isSelected()) {
+					try {
+						InetAddress ip = InetAddress.getByName(serverIPText.getText());
+						server = new ChatServer(ip);
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
+				isConnected = true;
 			}
 		});
 		
@@ -158,21 +174,22 @@ public class ChatGUI implements Runnable {
 				
 				btnDisconnect.setEnabled(false);
 				btnConnect.setEnabled(true);
-				
+				lblServerIp.setEnabled(true);
+				lblUserName.setEnabled(true);
 				incomingTextArea.append("Disconnecting...\n");
+				if (rdbtnHost.isSelected()) {
+					server.stop();
+					
+				} else if (rdbtnClient.isSelected()) {
+					client.stop();
+				}
+				isConnected = false;
 				
 			}
 		});
 		
-	}
-
-	@Override
-	public void run() {
-		switch(connectionStatus) {
-		case DISCONNECTED:
-			
-			break();
-		}
+		
 		
 	}
+
 }
