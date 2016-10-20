@@ -19,13 +19,12 @@ public class ChatGUI {
 	private boolean isHost = false;
 	private boolean isConnected = false;
 	
-	private int DISCONNECTED = 0;
-	private int CONNECTED = 1;
-	private int connectionStatus = DISCONNECTED;
-	
-	private ChatServer server;
-	private ChatClient client;
+	private static ChatServer server;
+	private static ChatClient client;
 	private String name;
+	
+	//TODO: just put these in here...need to check how to constantly update jtextarea
+
 	
 	
 	/**
@@ -57,7 +56,7 @@ public class ChatGUI {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		
+
 		frame = new JFrame("Simple Chat");
 		frame.setBounds(100, 100, 534, 348);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -118,8 +117,9 @@ public class ChatGUI {
 		frame.getContentPane().add(btnDisconnect);
 		btnDisconnect.setToolTipText("Click here to disconnect");
 		
+		// incoming text area
 		JTextArea incomingTextArea = new JTextArea();
-		incomingTextArea.setEditable(false); // uncomment when done testing
+		incomingTextArea.setEditable(false); 
 		incomingTextArea.setLineWrap(true);
 		frame.getContentPane().add(incomingTextArea);
 		JScrollPane scroll = new JScrollPane(incomingTextArea, 
@@ -129,11 +129,9 @@ public class ChatGUI {
 		
 		frame.getContentPane().add(scroll);
 		
-		
+		// outgoing text area
 		JTextArea outgoingTextArea = new JTextArea();
 		outgoingTextArea.setLineWrap(true);
-		
-		
 		frame.getContentPane().add(outgoingTextArea);
 		JScrollPane scroll2 = new JScrollPane(outgoingTextArea,
 				JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -141,31 +139,51 @@ public class ChatGUI {
 		scroll2.setBounds(245, 223, 236, 54);
 		frame.getContentPane().add(scroll2);
 		
-		
+		//-------------------------------------------------
 		/*
 		 * Add action listeners to connect and disconnect buttons and 
 		 * RUN PROGRAM BELOW
 		 */
-		
-		
+		//-------------------------------------------------
+
 		btnConnect.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				name = userNameText.getText();
 				btnConnect.setEnabled(false);
 				btnDisconnect.setEnabled(true);
 				serverIPText.setEnabled(false);
 				userNameText.setEnabled(false);
-				incomingTextArea.append("Connecting...\n");
-				name = userNameText.getText();
+				incomingTextArea.append("Connecting as: " + name + "...\n");
+				
 				
 				if (rdbtnHost.isSelected()) {
 					try {
 						InetAddress ip = InetAddress.getByName(serverIPText.getText());
-						server = new ChatServer(ip);
+						server = new ChatServer(ip, name);
+						server.start();
+						incomingTextArea.append("Connected... \n");
+						isConnected = true;
+						
+					} catch (IOException e1) {
+						System.out.println("error has occured:");
+						e1.printStackTrace();
+					}
+					isHost = true;
+					
+					
+				} else if (rdbtnClient.isSelected()) {
+					try {
+						InetAddress ip = InetAddress.getByName(serverIPText.getText());
+						client = new ChatClient(ip, name);
+						incomingTextArea.append("Connected... \n");
+						isConnected = true;
+						
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
+
 				}
-				isConnected = true;
+				
 			}
 		});
 		
@@ -179,17 +197,48 @@ public class ChatGUI {
 				incomingTextArea.append("Disconnecting...\n");
 				if (rdbtnHost.isSelected()) {
 					server.stop();
+					incomingTextArea.append("Disconnected...\n");
 					
 				} else if (rdbtnClient.isSelected()) {
 					client.stop();
+					incomingTextArea.append("Disconnected...\n");
 				}
 				isConnected = false;
 				
 			}
 		});
 		
+		outgoingTextArea.addKeyListener(new KeyListener(){
+		    public void keyPressed(KeyEvent e){
+		    	String s = outgoingTextArea.getText();
+		        if(e.getKeyCode() == KeyEvent.VK_ENTER && isConnected){
+		        	if (isHost) {
+		        		server.sendMessage(s);
+		        		// TODO: checking below append...didn't work last time
+		        		incomingTextArea.append(name + ": " + s + "\n");
+		        		outgoingTextArea.setText("");
+		        	} else {
+		        		client.sendMessage(s);
+		        		// TODO: checking below append...didn't work last time
+		        		incomingTextArea.append(name + ": " + s + "\n");
+		        		outgoingTextArea.setText("");
+		        	}
+	
+		        } else if (e.getKeyCode() == KeyEvent.VK_ENTER && !isConnected){
+		        	incomingTextArea.append("You are not connected, message not sent");
+		        }
+		    }
+			@Override
+			public void keyReleased(KeyEvent arg0) {	
+				
+			}
+			@Override
+			public void keyTyped(KeyEvent arg0) {				
+			}
+		});
 		
 		
 	}
+
 
 }
