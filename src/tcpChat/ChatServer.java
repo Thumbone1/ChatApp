@@ -29,7 +29,7 @@ public class ChatServer {
 		}
 	}
 	
-	public void stop() {
+	public void stopServer() {
 		try {
 			socket.close();
 			server.close();
@@ -72,7 +72,7 @@ public class ChatServer {
 		return this.ip;
 	}
 	
-	public String getName() {
+	public String getServerName() {
 		return name;
 	}
 

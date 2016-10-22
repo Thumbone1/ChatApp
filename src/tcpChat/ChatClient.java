@@ -48,7 +48,7 @@ public class ChatClient {
 	}
 
 	
-	public void stop() {
+	public void stopClient() {
 		try {
 			socket.close();
 		} catch (IOException e) {
@@ -56,7 +56,7 @@ public class ChatClient {
 		}
 	}
 	
-	public String getName() {
+	public String getClientName() {
 		return name;
 	}
 	
