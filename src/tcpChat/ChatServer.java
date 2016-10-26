@@ -41,7 +41,7 @@ public class ChatServer {
 	
 	public void sendMessage(String s) {
 		try {
-			OutputStream outToClient = this.socket.getOutputStream();
+			OutputStream outToClient = socket.getOutputStream();
 			DataOutputStream out = new DataOutputStream(outToClient);
 			out.writeUTF(s);
 		} catch (IOException e) {

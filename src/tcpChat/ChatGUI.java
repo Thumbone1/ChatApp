@@ -7,7 +7,6 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 
 
 public class ChatGUI {
@@ -16,14 +15,17 @@ public class ChatGUI {
 	private JTextField serverIPText;
 	private JTextField userNameText;
 	
-	private boolean isHost = false;
+	private boolean isHost;
 	private boolean isConnected = false;
 	
 	private static ChatServer server;
 	private static ChatClient client;
 	private String name;
+	private String message;
 	
+	ChatThread t = new ChatThread();
 	//TODO: need to check how to constantly update jtextarea
+	// I may need to rethink the entire project...
 	
 	/**
 	 * Launch the application.
@@ -163,7 +165,20 @@ public class ChatGUI {
 						incomingTextArea.append("Connected... \n");
 						isConnected = true;
 						t.start();
-						
+						// added to see if this will append the text area with incoming messages
+						/*
+						while (isConnected) {
+							if (t.msg().compareTo(null) == 0) {
+								continue;
+							}
+							else if (t.msg().compareTo(null) != 0) {
+								incomingTextArea.append(t.msg());
+								continue;
+							} else {
+								continue;
+							}
+						}*/
+						//System.out.println(server.getMessage());
 						
 					} catch (IOException e1) {
 						System.out.println("error has occured:");
@@ -177,15 +192,30 @@ public class ChatGUI {
 						InetAddress ip = InetAddress.getByName(serverIPText.getText());
 						client = new ChatClient(ip, name);
 						incomingTextArea.append("Connected... \n");
-						ChatThread t = new ChatThread();
+						
 						isConnected = true;
 						t.start();
+						// added to see if this will append the text area with incoming messages
+						/*
+						while (isConnected) {
+							if (t.msg().compareTo(null) == 0) {
+								continue;
+							}
+							else if (t.msg().compareTo(null) != 0) {
+								incomingTextArea.append(t.msg());
+								continue;
+							} else {
+								continue;
+							}
+						}*/
+						//System.out.println(client.getMessage());
 						
 					} catch (IOException e1) {
 						e1.printStackTrace();
 					}
 
 				}
+				
 				
 			}
 		});
@@ -239,26 +269,31 @@ public class ChatGUI {
 		});
 		
 		
+		
+		
 	}
 	
 	/**
 	 * Thread for reading messages to gui
-	 * I'm so fucking close on this one
 	 * 
 	 */
 	private class ChatThread extends Thread {
 		public void run() {
 			if (!isHost) {
-				client.getMessage();
-				System.out.println("receiving a message on clientside");
+				message = client.getMessage();
+				//System.out.println("receiving a message on clientside");
+				System.out.println(client.getMessage());
 			} else {
-				server.getMessage();
-				System.out.println("receiving a message on clientside");
+				message = server.getMessage();
+				//System.out.println("receiving a message on serverside");
+				System.out.println(server.getMessage());
+				
 			}
-			
-			
+		}
+		
+		public String msg() {
+			return message;
 		}
 	}
-
 
 }
